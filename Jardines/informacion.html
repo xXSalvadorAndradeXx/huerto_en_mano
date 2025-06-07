@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Huerto en Mano - Crear Jardín Desde Cero</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
+   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+   <style>
         :root {
             --primary-color: #4a8f29;
             --primary-light: #6bbd47;
@@ -274,9 +276,9 @@
             <input type="text" placeholder="Nombre del jardín">
         </div>
 
-        <div class="form-group">
-    <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
-    <input type="text" id="location-input" placeholder="Ubicación" readonly>
+      <div class="form-group">
+    <div class="icon" id="location-icon" title="Obtener ubicación"><i class="fas fa-map-marker-alt"></i></div>
+    <input type="text" id="location-input" placeholder="Ubicación" readonly />
   </div>
 
         <div class="form-group">
@@ -284,7 +286,7 @@
             <input type="text" placeholder="Descripción (opcional)">
         </div>
 
-<div class="weather" id="weather-container">
+  <div class="weather" id="weather-container">
     <div class="icon" id="weather-icon">
       <i class="fas fa-sun"></i>
       <span>Sunny</span>
@@ -308,29 +310,15 @@
     <footer>
         Agile Development Team © 2025 | Cuidando el planeta un jardín a la vez
     </footer>
-
-
-
-
-
-
-
-
-
-
-
-
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <script>
     const apiKey = "j7K9DDtIA482PGe2DNEF7wuFbCMXvowH"; // Reemplaza con tu clave API
 
-    function getWeather(lat, lon) {
+     function getWeather(lat, lon) {
       fetch(`https://api.tomorrow.io/v4/timelines?location=${lat},${lon}&fields=temperature,precipitationProbability,weatherCode&timesteps=current&units=metric&apikey=${apiKey}`)
         .then(response => response.json())
         .then(data => {
           const { temperature, precipitationProbability, weatherCode } = data.data.timelines[0].intervals[0].values;
 
-          // Actualiza íconos y texto dinámicamente
           document.getElementById("temperature").innerHTML = `
             <i class="fas fa-thermometer-half"></i>
             <span>${temperature}°C</span>
@@ -340,19 +328,18 @@
             <span>${precipitationProbability}%</span>
           `;
 
-          // Cambia el ícono según el código del clima
           const weatherIcons = {
-            1000: "fas fa-sun", // Clear
-            1100: "fas fa-cloud-sun", // Partly Cloudy
-            1101: "fas fa-cloud", // Mostly Cloudy
-            1102: "fas fa-cloud", // Cloudy
-            2000: "fas fa-smog", // Fog
-            2100: "fas fa-smog", // Light Fog
-            3000: "fas fa-wind", // Windy
-            4000: "fas fa-cloud-rain", // Drizzle
-            5000: "fas fa-snowflake", // Snow
-            6000: "fas fa-cloud-rain", // Freezing Rain
-            7000: "fas fa-bolt", // Thunderstorm
+            1000: "fas fa-sun",
+            1100: "fas fa-cloud-sun",
+            1101: "fas fa-cloud",
+            1102: "fas fa-cloud",
+            2000: "fas fa-smog",
+            2100: "fas fa-smog",
+            3000: "fas fa-wind",
+            4000: "fas fa-cloud-rain",
+            5000: "fas fa-snowflake",
+            6000: "fas fa-cloud-rain",
+            7000: "fas fa-bolt",
           };
 
           const weatherIcon = weatherIcons[weatherCode] || "fas fa-question";
@@ -382,24 +369,50 @@
     }
 
     function fetchLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            document.getElementById("location-input").value = `Lat: ${latitude}, Lon: ${longitude}`;
-            getWeather(latitude, longitude);
-          },
-          (error) => {
-            console.error("Error obtaining location:", error);
-            document.getElementById("location-input").value = "Unable to fetch location";
+      navigator.permissions
+        .query({ name: "geolocation" })
+        .then(permission => {
+          if (permission.state === "granted") {
+            getUserLocation();
+          } else if (permission.state === "prompt") {
+            getUserLocation();
+          } else {
+            document.getElementById("location-input").value = "Geolocation denied. Enable in settings.";
           }
-        );
-      } else {
-        document.getElementById("location-input").value = "Geolocation not supported";
-      }
+        })
+        .catch(error => {
+          console.error("Error checking permissions:", error);
+          document.getElementById("location-input").value = "Error fetching permissions.";
+        });
     }
 
-    // Inicializa la ubicación y clima al cargar la página
+    function getUserLocation() {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          getWeather(latitude, longitude);
+          reverseGeocode(latitude, longitude);
+        },
+        (error) => {
+          console.error("Error obtaining location:", error);
+          document.getElementById("location-input").value = "Unable to fetch location.";
+        }
+      );
+    }
+
+    function reverseGeocode(lat, lon) {
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+        .then(response => response.json())
+        .then(data => {
+          const locationName = data.address.city || data.address.town || data.address.village || "Unknown Location";
+          document.getElementById("location-input").value = locationName;
+        })
+        .catch(error => {
+          console.error("Error fetching location name:", error);
+          document.getElementById("location-input").value = "Error fetching location name.";
+        });
+    }
+
     fetchLocation();
   </script>
 </body>
