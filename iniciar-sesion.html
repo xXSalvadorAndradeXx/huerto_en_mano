@@ -22,7 +22,7 @@
   </header>
 
 
-<form>
+
   <div class="login-container">
     <h2 class="form-title"><i class="fas fa-user-circle"></i> Iniciar Sesión</h2>
     
@@ -36,16 +36,22 @@
       <input type="password" id="password" placeholder="Ingresa tu contraseña">
     </div>
     
-    <button class="login-btn" onclick="location.href='/Menu/menu_principal.html'">Iniciar Sesión</button>
+    <button class="login-btn" id="loginButton">Iniciar Sesión</button>
     
     <p class="register-link">¿No tienes una cuenta? <a href="registro.html">Crea una cuenta</a></p>
   </div>
-</form>
+
 
   
 
   <footer>
     Agile Development Team © 2025 | Cuidando el planeta un jardín a la vez
   </footer>
+
+  <script>
+    document.getElementById('loginButton').onclick = function () {
+        location.href = '/Menu/menu_principal.html';
+    };
+</script>
 </body>
 </html>

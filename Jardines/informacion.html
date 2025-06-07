@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huerto en Mano - Crear Jardín Desde Cero</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a8f29;
+            --primary-light: #6bbd47;
+            --secondary-color: #f5f7f3;
+            --accent-color: #e8c872;
+            --dark-color: #2c3e21;
+            --light-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background-color: var(--light-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 1.5rem;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--primary-color);
+            transition: var(--transition);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .profile span {
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .profile img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .title {
+            color: var(--dark-color);
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 3rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 143, 41, 0.2);
+        }
+
+        .form-group .icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .weather {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .weather .icon {
+            width: 50px;
+            height: 50px;
+            background-color: var(--light-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 2.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(74, 143, 41, 0.3);
+        }
+
+        button:hover {
+            background-color: var(--dark-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 143, 41, 0.4);
+        }
+
+        footer {
+            background-color: var(--dark-color);
+            color: var(--light-color);
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            nav a {
+                margin-right: 1rem;
+            }
+
+            main {
+                padding: 1.5rem;
+            }
+
+            .title {
+                font-size: 1.8rem;
+            }
+        }
+
+            .weather {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    .icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .icon i {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    .icon span {
+      font-size: 14px;
+    }
+    </style>
+</head>
+<body>
+    <nav>
+        <div>
+            <a href="index.html">
+                <i class="fas fa-leaf" style="color: var(--primary-color); margin-right: 0.5rem;"></i>
+                <span style="font-weight: 600;">Huerto en Mano</span>
+            </a>
+            <a href="#">Mis Jardines</a>
+            <a href="#">Mis Plantas</a>
+            <a href="#">Marketplace</a>
+        </div>
+        <div class="profile">
+            <span>Hola, María</span>
+            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Usuario">
+        </div>
+    </nav>
+
+    <main>
+        <h1 class="title">Crear Jardín Desde Cero</h1>
+
+        <div class="form-group">
+            <div class="icon"><i class="fas fa-tag"></i></div>
+            <input type="text" placeholder="Nombre del jardín">
+        </div>
+
+        <div class="form-group">
+    <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
+    <input type="text" id="location-input" placeholder="Ubicación" readonly>
+  </div>
+
+        <div class="form-group">
+            <div class="icon"><i class="fas fa-align-left"></i></div>
+            <input type="text" placeholder="Descripción (opcional)">
+        </div>
+
+<div class="weather" id="weather-container">
+    <div class="icon" id="weather-icon">
+      <i class="fas fa-sun"></i>
+      <span>Sunny</span>
+    </div>
+    <div class="icon" id="temperature">
+      <i class="fas fa-thermometer-half"></i>
+      <span>27°</span>
+    </div>
+    <div class="icon" id="precipitation">
+      <i class="fas fa-cloud-rain"></i>
+      <span>0%</span>
+    </div>
+  </div>
+
+
+        <div class="button-container">
+            <button><i class="fas fa-save" style="margin-right: 0.5rem;"></i> Guardar Jardín</button>
+        </div>
+    </main>
+
+    <footer>
+        Agile Development Team © 2025 | Cuidando el planeta un jardín a la vez
+    </footer>
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+    const apiKey = "j7K9DDtIA482PGe2DNEF7wuFbCMXvowH"; // Reemplaza con tu clave API
+
+    function getWeather(lat, lon) {
+      fetch(`https://api.tomorrow.io/v4/timelines?location=${lat},${lon}&fields=temperature,precipitationProbability,weatherCode&timesteps=current&units=metric&apikey=${apiKey}`)
+        .then(response => response.json())
+        .then(data => {
+          const { temperature, precipitationProbability, weatherCode } = data.data.timelines[0].intervals[0].values;
+
+          // Actualiza íconos y texto dinámicamente
+          document.getElementById("temperature").innerHTML = `
+            <i class="fas fa-thermometer-half"></i>
+            <span>${temperature}°C</span>
+          `;
+          document.getElementById("precipitation").innerHTML = `
+            <i class="fas fa-cloud-rain"></i>
+            <span>${precipitationProbability}%</span>
+          `;
+
+          // Cambia el ícono según el código del clima
+          const weatherIcons = {
+            1000: "fas fa-sun", // Clear
+            1100: "fas fa-cloud-sun", // Partly Cloudy
+            1101: "fas fa-cloud", // Mostly Cloudy
+            1102: "fas fa-cloud", // Cloudy
+            2000: "fas fa-smog", // Fog
+            2100: "fas fa-smog", // Light Fog
+            3000: "fas fa-wind", // Windy
+            4000: "fas fa-cloud-rain", // Drizzle
+            5000: "fas fa-snowflake", // Snow
+            6000: "fas fa-cloud-rain", // Freezing Rain
+            7000: "fas fa-bolt", // Thunderstorm
+          };
+
+          const weatherIcon = weatherIcons[weatherCode] || "fas fa-question";
+          document.getElementById("weather-icon").innerHTML = `
+            <i class="${weatherIcon}"></i>
+            <span>${getWeatherDescription(weatherCode)}</span>
+          `;
+        })
+        .catch(error => console.error("Error fetching weather data:", error));
+    }
+
+    function getWeatherDescription(code) {
+      const descriptions = {
+        1000: "Clear",
+        1100: "Partly Cloudy",
+        1101: "Mostly Cloudy",
+        1102: "Cloudy",
+        2000: "Fog",
+        2100: "Light Fog",
+        3000: "Windy",
+        4000: "Drizzle",
+        5000: "Snow",
+        6000: "Freezing Rain",
+        7000: "Thunderstorm",
+      };
+      return descriptions[code] || "Unknown";
+    }
+
+    function fetchLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            document.getElementById("location-input").value = `Lat: ${latitude}, Lon: ${longitude}`;
+            getWeather(latitude, longitude);
+          },
+          (error) => {
+            console.error("Error obtaining location:", error);
+            document.getElementById("location-input").value = "Unable to fetch location";
+          }
+        );
+      } else {
+        document.getElementById("location-input").value = "Geolocation not supported";
+      }
+    }
+
+    // Inicializa la ubicación y clima al cargar la página
+    fetchLocation();
+  </script>
+</body>
+</html>
