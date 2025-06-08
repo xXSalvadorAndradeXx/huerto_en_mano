@@ -21,15 +21,7 @@ $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Encriptar co
 $direccion = isset($_POST['direccion']) ? $_POST['direccion'] : null;
 $telefono = isset($_POST['telefono']) ? $_POST['telefono'] : null;
 
-// Verificar que los correos coincidan
-if ($_POST['email'] !== $_POST['confirm-email']) {
-    die("Los correos electrónicos no coinciden");
-}
 
-// Verificar que las contraseñas coincidan
-if ($_POST['password'] !== $_POST['confirm-password']) {
-    die("Las contraseñas no coinciden");
-}
 
 // Preparar y ejecutar la consulta SQL
 $stmt = $conn->prepare("INSERT INTO usuarios (nombre, apellido, email, password, direccion, telefono) VALUES (?, ?, ?, ?, ?, ?)");
