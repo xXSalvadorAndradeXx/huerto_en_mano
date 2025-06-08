@@ -23,23 +23,25 @@
 
 
 
+<form id="loginForm" action="/Funcionamiento/login.php" method="post">
   <div class="login-container">
     <h2 class="form-title"><i class="fas fa-user-circle"></i> Iniciar Sesión</h2>
     
     <div class="form-group">
-      <label for="email">Correo electrónico</label>
-      <input type="email" id="email" placeholder="Ingresa tu correo">
+      <label for="login-email">Correo electrónico</label>
+      <input type="email" id="login-email" name="email" placeholder="Ingresa tu correo" required>
     </div>
     
     <div class="form-group">
-      <label for="password">Contraseña</label>
-      <input type="password" id="password" placeholder="Ingresa tu contraseña">
+      <label for="login-password">Contraseña</label>
+      <input type="password" id="login-password" name="password" placeholder="Ingresa tu contraseña" required>
     </div>
     
-    <button class="login-btn" id="loginButton">Iniciar Sesión</button>
+    <button type="submit" class="login-btn" id="loginButton">Iniciar Sesión</button>
     
     <p class="register-link">¿No tienes una cuenta? <a href="registro.html">Crea una cuenta</a></p>
   </div>
+</form>
 
 
   
