@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diseñador de Jardín 3D Avanzado</title>
+    <style>
+        :root {
+            --ground-color-1: #8B4513;
+            --ground-color-2: #556B2F;
+            --sky-color: linear-gradient(to bottom, #87CEEB, #E0F7FA);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: var(--sky-color);
+            height: 100vh;
+        }
+
+        #app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Panel de control izquierdo */
+        #control-panel {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        h2 {
+            color: #2E7D32;
+            font-size: 1.2em;
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #388E3C;
+        }
+
+        #plants-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .plant-option {
+            width: 100%;
+            height: 60px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            cursor: grab;
+            transition: all 0.2s;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        .plant-option:hover {
+            transform: scale(1.05);
+            border-color: #4CAF50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+        }
+
+        /* Área de diseño 3D */
+        #design-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #scene-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            perspective: 1200px;
+            transform-style: preserve-3d;
+        }
+
+        #ground-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-out;
+        }
+
+        #ground {
+            position: absolute;
+            background-image: 
+                linear-gradient(135deg, var(--ground-color-1) 25%, var(--ground-color-2) 25%),
+                linear-gradient(225deg, var(--ground-color-1) 25%, var(--ground-color-2) 25%),
+                linear-gradient(315deg, var(--ground-color-1) 25%, var(--ground-color-2) 25%),
+                linear-gradient(45deg, var(--ground-color-1) 25%, var(--ground-color-2) 25%);
+            background-size: 100px 100px;
+            background-repeat: repeat;
+            transform-origin: center;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        #garden-boundary {
+            position: absolute;
+            border: 2px dashed rgba(255, 255, 255, 0.7);
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        #garden-area {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .plant-in-garden {
+            position: absolute;
+            pointer-events: auto;
+            cursor: move;
+            transform-origin: center bottom;
+            transition: transform 0.1s;
+            filter: drop-shadow(2px 4px 3px rgba(0, 0, 0, 0.3));
+            z-index: 10;
+        }
+
+        .plant-in-garden:hover {
+            transform: scale(1.05) translateZ(10px);
+            z-index: 20;
+        }
+
+        /* Controles de vista */
+        #view-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .view-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        #zoom-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .zoom-btn {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Estilos para las plantas SVG */
+        .tree-1 { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,10 Q60,40 70,50 Q60,60 50,90 Q40,60 30,50 Q40,40 50,10" fill="%234CAF50"/><rect x="47" y="50" width="6" height="40" fill="%238BC34A"/></svg>'); }
+        .tree-2 { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="30" r="25" fill="%232E7D32"/><rect x="45" y="30" width="10" height="50" fill="%235D4037"/></svg>'); }
+        .flower-1 { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="40" r="15" fill="%23FFC107"/><rect x="47" y="40" width="6" height="50" fill="%238BC34A"/></svg>'); }
+        .flower-2 { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="35" r="10" fill="%23E91E63"/><circle cx="58" cy="40" r="8" fill="%23E91E63"/><circle cx="45" cy="45" r="7" fill="%23E91E63"/><rect x="48" y="45" width="4" height="45" fill="%238BC34A"/></svg>'); }
+        .shrub-1 { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><ellipse cx="50" cy="60" rx="30" ry="20" fill="%232E7D32"/><ellipse cx="50" cy="40" rx="25" ry="25" fill="%234CAF50"/><rect x="47" y="60" width="6" height="30" fill="%235D4037"/></svg>'); }
+        .shrub-2 { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M30,70 Q50,20 70,70 Z" fill="%234CAF50"/><rect x="47" y="70" width="6" height="20" fill="%235D4037"/></svg>'); }
+        .cactus-1 { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="40" y="20" width="20" height="60" fill="%238BC34A"/><rect x="35" y="40" width="10" height="30" fill="%238BC34A"/><rect x="55" y="30" width="10" height="40" fill="%238BC34A"/></svg>'); }
+        .cactus-2 { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="30" r="15" fill="%238BC34A"/><rect x="47" y="30" width="6" height="50" fill="%238BC34A"/><rect x="47" y="50" width="20" height="6" fill="%238BC34A"/></svg>'); }
+        .grass-1 { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M30,80 Q40,40 50,80 Q60,30 70,80" stroke="%238BC34A" stroke-width="3" fill="none"/></svg>'); }
+        .grass-2 { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M40,90 Q45,50 50,90 Q55,60 60,90" stroke="%234CAF50" stroke-width="4" fill="none"/></svg>'); }
+        .rose { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,30 Q55,20 60,30 Q65,25 60,40 Q65,45 50,50 Q35,45 40,40 Q35,25 40,30 Q45,20 50,30" fill="%23F44336"/><rect x="48" y="50" width="4" height="40" fill="%232E7D32"/></svg>'); }
+        .sunflower { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="40" r="20" fill="%23FFC107"/><circle cx="50" cy="40" r="10" fill="%23795548"/><rect x="48" y="40" width="4" height="50" fill="%232E7D32"/></svg>'); }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Panel de control -->
+        <div id="control-panel">
+            <div class="control-section">
+                <h2>Configuración del Terreno</h2>
+                <label for="terrain-width">Ancho (metros):</label>
+                <input type="number" id="terrain-width" min="5" max="50" value="10">
+                
+                <label for="terrain-length">Largo (metros):</label>
+                <input type="number" id="terrain-length" min="5" max="50" value="15">
+                
+                <label for="terrain-color1">Color principal:</label>
+                <input type="color" id="terrain-color1" value="#8B4513">
+                
+                <label for="terrain-color2">Color secundario:</label>
+                <input type="color" id="terrain-color2" value="#556B2F">
+                
+                <button id="apply-terrain">Aplicar Cambios</button>
+            </div>
+            
+            <div class="control-section">
+                <h2>Plantas Disponibles</h2>
+                <div id="plants-grid">
+                    <div class="plant-option tree-1" draggable="true" data-plant-type="tree-1" title="Árbol Frondoso"></div>
+                    <div class="plant-option tree-2" draggable="true" data-plant-type="tree-2" title="Árbol Alto"></div>
+                    <div class="plant-option flower-1" draggable="true" data-plant-type="flower-1" title="Margarita"></div>
+                    <div class="plant-option flower-2" draggable="true" data-plant-type="flower-2" title="Flor Rosada"></div>
+                    <div class="plant-option shrub-1" draggable="true" data-plant-type="shrub-1" title="Arbusto Redondo"></div>
+                    <div class="plant-option shrub-2" draggable="true" data-plant-type="shrub-2" title="Arbusto Triangular"></div>
+                    <div class="plant-option cactus-1" draggable="true" data-plant-type="cactus-1" title="Cactus Grande"></div>
+                    <div class="plant-option cactus-2" draggable="true" data-plant-type="cactus-2" title="Cactus Pequeño"></div>
+                    <div class="plant-option grass-1" draggable="true" data-plant-type="grass-1" title="Hierba Alta"></div>
+                    <div class="plant-option grass-2" draggable="true" data-plant-type="grass-2" title="Hierba Baja"></div>
+                    <div class="plant-option rose" draggable="true" data-plant-type="rose" title="Rosa"></div>
+                    <div class="plant-option sunflower" draggable="true" data-plant-type="sunflower" title="Girasol"></div>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h2>Opciones</h2>
+                <button id="clear-garden">Limpiar Jardín</button>
+                <button id="save-design">Guardar Diseño</button>
+            </div>
+        </div>
+        
+        <!-- Área de diseño 3D -->
+        <div id="design-area">
+            <div id="scene-container">
+                <div id="ground-container">
+                    <div id="ground"></div>
+                    <div id="garden-boundary"></div>
+                    <div id="garden-area"></div>
+                </div>
+            </div>
+            
+            <!-- Controles de zoom -->
+            <div id="zoom-controls">
+                <div class="zoom-btn" id="zoom-in">+</div>
+                <div class="zoom-btn" id="zoom-out">-</div>
+            </div>
+            
+            <!-- Controles de vista -->
+            <div id="view-controls">
+                <div class="view-btn" id="view-top">↑</div>
+                <div class="view-btn" id="view-front">→</div>
+                <div class="view-btn" id="view-side">↓</div>
+                <div class="view-btn" id="view-iso">↗</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos del DOM
+            const ground = document.getElementById('ground');
+            const groundContainer = document.getElementById('ground-container');
+            const gardenArea = document.getElementById('garden-area');
+            const gardenBoundary = document.getElementById('garden-boundary');
+            const plantOptions = document.querySelectorAll('.plant-option');
+            const applyTerrainBtn = document.getElementById('apply-terrain');
+            const clearGardenBtn = document.getElementById('clear-garden');
+            const saveDesignBtn = document.getElementById('save-design');
+            const viewTopBtn = document.getElementById('view-top');
+            const viewFrontBtn = document.getElementById('view-front');
+            const viewSideBtn = document.getElementById('view-side');
+            const viewIsoBtn = document.getElementById('view-iso');
+            const zoomInBtn = document.getElementById('zoom-in');
+            const zoomOutBtn = document.getElementById('zoom-out');
+            
+            // Variables de estado
+            let terrainWidth = 10;
+            let terrainLength = 15;
+            let groundRotationX = 60;
+            let groundRotationY = 0;
+            let zoomLevel = 1;
+            let isDragging = false;
+            let dragStartX, dragStartY;
+            let startRotationX, startRotationY;
+            let selectedPlant = null;
+            let plantSizeMap = {
+                'tree-1': { width: 80, height: 120 },
+                'tree-2': { width: 60, height: 150 },
+                'flower-1': { width: 40, height: 60 },
+                'flower-2': { width: 50, height: 70 },
+                'shrub-1': { width: 70, height: 80 },
+                'shrub-2': { width: 60, height: 70 },
+                'cactus-1': { width: 50, height: 90 },
+                'cactus-2': { width: 40, height: 80 },
+                'grass-1': { width: 60, height: 40 },
+                'grass-2': { width: 50, height: 30 },
+                'rose': { width: 40, height: 70 },
+                'sunflower': { width: 50, height: 90 }
+            };
+            
+            // Inicialización
+            updateTerrain();
+            setupEventListeners();
+            
+            function updateTerrain() {
+                // Obtener valores del formulario
+                terrainWidth = parseInt(document.getElementById('terrain-width').value);
+                terrainLength = parseInt(document.getElementById('terrain-length').value);
+                const color1 = document.getElementById('terrain-color1').value;
+                const color2 = document.getElementById('terrain-color2').value;
+                
+                // Actualizar variables CSS
+                document.documentElement.style.setProperty('--ground-color-1', color1);
+                document.documentElement.style.setProperty('--ground-color-2', color2);
+                
+                // Calcular dimensiones relativas (mantener proporción)
+                const aspectRatio = terrainWidth / terrainLength;
+                const baseSize = 500; // Tamaño base para el terreno
+                
+                let groundWidth, groundHeight;
+                if (aspectRatio > 1) {
+                    groundWidth = baseSize * zoomLevel;
+                    groundHeight = (baseSize / aspectRatio) * zoomLevel;
+                } else {
+                    groundHeight = baseSize * zoomLevel;
+                    groundWidth = (baseSize * aspectRatio) * zoomLevel;
+                }
+                
+                // Aplicar estilos al terreno
+                ground.style.width = `${groundWidth}px`;
+                ground.style.height = `${groundHeight}px`;
+                ground.style.left = `calc(50% - ${groundWidth/2}px)`;
+                ground.style.top = `calc(50% - ${groundHeight/2}px)`;
+                
+                // Actualizar el patrón del terreno
+                ground.style.backgroundImage = 
+                    `linear-gradient(135deg, ${color1} 25%, ${color2} 25%),
+                    linear-gradient(225deg, ${color1} 25%, ${color2} 25%),
+                    linear-gradient(315deg, ${color1} 25%, ${color2} 25%),
+                    linear-gradient(45deg, ${color1} 25%, ${color2} 25%)`;
+                
+                // Actualizar el área del jardín
+                updateGardenBoundary();
+                updateGroundRotation();
+            }
+            
+            function updateGardenBoundary() {
+                const groundRect = ground.getBoundingClientRect();
+                const containerRect = document.getElementById('scene-container').getBoundingClientRect();
+                
+                const scaleX = ground.offsetWidth / terrainWidth;
+                const scaleY = ground.offsetHeight / terrainLength;
+                
+                gardenBoundary.style.width = `${terrainWidth * scaleX}px`;
+                gardenBoundary.style.height = `${terrainLength * scaleY}px`;
+                gardenBoundary.style.left = `${groundRect.left - containerRect.left}px`;
+                gardenBoundary.style.top = `${groundRect.top - containerRect.top}px`;
+            }
+            
+            function updateGroundRotation() {
+                groundContainer.style.transform = `
+                    scale(${zoomLevel})
+                    rotateX(${groundRotationX}deg)
+                    rotateY(${groundRotationY}deg)
+                `;
+            }
+            
+            function setupEventListeners() {
+                // Configuración del terreno
+                applyTerrainBtn.addEventListener('click', updateTerrain);
+                
+                // Controles de vista
+                viewTopBtn.addEventListener('click', () => {
+                    groundRotationX = 90;
+                    groundRotationY = 0;
+                    updateGroundRotation();
+                });
+                
+                viewFrontBtn.addEventListener('click', () => {
+                    groundRotationX = 0;
+                    groundRotationY = 0;
+                    updateGroundRotation();
+                });
+                
+                viewSideBtn.addEventListener('click', () => {
+                    groundRotationX = 0;
+                    groundRotationY = 90;
+                    updateGroundRotation();
+                });
+                
+                viewIsoBtn.addEventListener('click', () => {
+                    groundRotationX = 60;
+                    groundRotationY = 0;
+                    updateGroundRotation();
+                });
+                
+                // Controles de zoom
+                zoomInBtn.addEventListener('click', () => {
+                    zoomLevel = Math.min(zoomLevel + 0.1, 2);
+                    updateTerrain();
+                });
+                
+                zoomOutBtn.addEventListener('click', () => {
+                    zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
+                    updateTerrain();
+                });
+                
+                // Limpiar jardín
+                clearGardenBtn.addEventListener('click', () => {
+                    gardenArea.innerHTML = '';
+                });
+                
+                // Guardar diseño (simulado)
+                saveDesignBtn.addEventListener('click', () => {
+                    alert('Diseño guardado (simulación)');
+                });
+                
+                // Arrastrar plantas desde el panel
+                plantOptions.forEach(plant => {
+                    plant.addEventListener('dragstart', function(e) {
+                        selectedPlant = this.getAttribute('data-plant-type');
+                        e.dataTransfer.setData('text/plain', selectedPlant);
+                    });
+                });
+                
+                // Soltar plantas en el jardín
+                gardenArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                });
+                
+                gardenArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    if (!selectedPlant) return;
+                    
+                    const groundRect = ground.getBoundingClientRect();
+                    const x = e.clientX - groundRect.left;
+                    const y = e.clientY - groundRect.top;
+                    
+                    // Verificar que la planta se coloque dentro del terreno
+                    if (x >= 0 && x <= groundRect.width && y >= 0 && y <= groundRect.height) {
+                        createPlantInGarden(selectedPlant, x, y);
+                    }
+                    
+                    selectedPlant = null;
+                });
+                
+                // Rotación del terreno con arrastre
+                ground.addEventListener('mousedown', function(e) {
+                    isDragging = true;
+                    dragStartX = e.clientX;
+                    dragStartY = e.clientY;
+                    startRotationX = groundRotationX;
+                    startRotationY = groundRotationY;
+                    ground.style.cursor = 'grabbing';
+                });
+                
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    
+                    const deltaX = e.clientX - dragStartX;
+                    const deltaY = e.clientY - dragStartY;
+                    
+                    groundRotationY = startRotationY + deltaX * 0.5;
+                    groundRotationX = Math.max(0, Math.min(90, startRotationX - deltaY * 0.3));
+                    
+                    updateGroundRotation();
+                });
+                
+                document.addEventListener('mouseup', function() {
+                    isDragging = false;
+                    ground.style.cursor = 'default';
+                });
+            }
+            
+            function createPlantInGarden(plantType, x, y) {
+                const plant = document.createElement('div');
+                plant.className = `plant-in-garden ${plantType}`;
+                
+                // Tamaño basado en el tipo de planta
+                const size = plantSizeMap[plantType] || { width: 50, height: 50 };
+                
+                plant.style.width = `${size.width}px`;
+                plant.style.height = `${size.height}px`;
+                plant.style.left = `${x - size.width/2}px`;
+                plant.style.top = `${y - size.height}px`; // Anclar la base de la planta
+                plant.setAttribute('data-plant-type', plantType);
+                
+                // Hacer la planta arrastrable
+                plant.draggable = true;
+                
+                plant.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', 'move');
+                    this.classList.add('dragging');
+                    e.dataTransfer.setDragImage(new Image(), 0, 0);
+                });
+                
+                plant.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                });
+                
+                // Permitir mover plantas con el mouse
+                let isMovingPlant = false;
+                let offsetX, offsetY;
+                
+                plant.addEventListener('mousedown', function(e) {
+                    isMovingPlant = true;
+                    const rect = this.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    this.style.zIndex = '100';
+                    e.preventDefault();
+                });
+                
+                document.addEventListener('mousemove', function(e) {
+                    if (!isMovingPlant) return;
+                    
+                    const plant = document.querySelector('.plant-in-garden.dragging');
+                    if (!plant) return;
+                    
+                    const groundRect = ground.getBoundingClientRect();
+                    let newX = e.clientX - groundRect.left - offsetX;
+                    let newY = e.clientY - groundRect.top - offsetY;
+                    
+                    // Limitar al área del terreno
+                    const plantWidth = parseInt(plant.style.width);
+                    const plantHeight = parseInt(plant.style.height);
+                    
+                    newX = Math.max(0, Math.min(newX, groundRect.width - plantWidth));
+                    newY = Math.max(0, Math.min(newY, groundRect.height - plantHeight));
+                    
+                    plant.style.left = `${newX}px`;
+                    plant.style.top = `${newY}px`;
+                });
+                
+                document.addEventListener('mouseup', function() {
+                    isMovingPlant = false;
+                    const plant = document.querySelector('.plant-in-garden.dragging');
+                    if (plant) plant.style.zIndex = '10';
+                });
+                
+                gardenArea.appendChild(plant);
+            }
+        });
+    </script>
+</body>
+</html>
